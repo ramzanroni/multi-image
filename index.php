@@ -1,3 +1,9 @@
+<?php
+include_once('db.php');
+$writeDB = DB::connectWriteDB();
+$readDB = DB::connectReadDB();
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -230,6 +236,25 @@
         </div>
         <h2 class="success_msg">File has uploaded successfully!</h2>
       </div>
+      <div class="col-md-12" id="imageDiv">
+        <p>Uploaded Image</p>
+        <?php
+        $imageData = $readDB->prepare('SELECT * FROM `item_ref_file`');
+        $imageData->execute();
+        while ($row = $imageData->fetch(PDO::FETCH_ASSOC)) {
+        ?>
+          <article style="position: relative;" id="art_<?php echo $row['id']; ?>" class="suggested-posts-article remove_artical1">
+            <div class="posts_article" style="background-image: url(<?php echo $row['doc_name']; ?>); background-size: cover;margin: 20px;border: 1px solid rgba(0, 0, 0, 0.3);background-position: center;">
+
+            </div>
+            <span onclick="deleteImage(<?php echo $row['id']; ?>, '<?php echo $row['doc_name']; ?>')" class="btn btn-danger btnxc" deltsid="0"><i class="fas fa-trash text-white"></i></span>
+          </article>
+        <?php
+        }
+
+        ?>
+
+      </div>
     </div>
   </div>
   <script>
@@ -297,6 +322,7 @@
           processData: false,
           contentType: false,
           success: function(data) {
+            console.log(data);
             $(".main-content").find(".message-loading-overlay2").remove();
             const myTimeout = setTimeout(myGreeting, 3000);
 
@@ -352,6 +378,31 @@
       dts.push(deltsid);
       $(this).parents(".suggested-posts-article").remove();
     });
+
+    function deleteImage(imageID, imageName) {
+      const check = "deleteImage";
+      let arID = 'art_' + imageID;
+      $.ajax({
+        url: "image-action.php",
+        type: "POST",
+        data: {
+          imageID: imageID,
+          imageName: imageName,
+          check: check
+        },
+        success: function(response) {
+          console.log(response);
+
+          if (response == 'success') {
+            console.log(response);
+            let element = document.getElementById(arID);
+            console.log(element);
+            $("#imageDiv").load(" #imageDiv");
+            $("#imageDiv").load(" #imageDiv > *");
+          }
+        }
+      });
+    }
   </script>
 </body>
 
